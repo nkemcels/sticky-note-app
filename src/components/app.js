@@ -1,10 +1,14 @@
 import React, {Component} from "react";
 import IconButton from "@material-ui/core/IconButton";
+import Button from "@material-ui/core/Button";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/DeleteForever";
 import MoreIcon from "@material-ui/icons/MoreHoriz";
-import MorePopover from "./popover"
-import {ipcRenderer} from "electron"
+import MorePopover from "./popover";
+import {ipcRenderer} from "electron";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
+import Modal from "@material-ui/core/Modal";
 import "./style.css";
 
 export default class StickyNotes extends Component{
@@ -14,7 +18,8 @@ export default class StickyNotes extends Component{
             note:"",
             noteId:null,
             noteIsSaving:false,
-            noteIsSaved:null
+            noteIsSaved:null,
+            confirmNoteDelete:false
         }
 
         ipcRenderer.on("initial-data-reply", (event, args)=>{
@@ -45,7 +50,7 @@ export default class StickyNotes extends Component{
     }
 
     handleDeleteNote = ()=>{
-
+        ipcRenderer.send("delete-note", {noteId:this.state.noteId});
     }
 
     handleExpandMore = ()=>{
@@ -85,6 +90,23 @@ export default class StickyNotes extends Component{
         }
     }
 
+    handleCloseDialog = ()=>{
+        this.setState({
+            confirmNoteDelete:false
+        })
+    }
+
+    handleConfirmNoteDelete = ()=>{
+        if(this.state.noteId){
+            this.setState({
+                confirmNoteDelete:true
+            });
+        }else{
+            this.handleDeleteNote();
+        }
+        
+    }
+
     render(){
         return(
             <div className="sticker">
@@ -105,11 +127,43 @@ export default class StickyNotes extends Component{
                         </MorePopover>
                     </span>
                     <span>
-                        <IconButton onClick={this.handleDeleteNote}> <DeleteIcon /> </IconButton>
+                        <IconButton onClick={this.handleConfirmNoteDelete}> <DeleteIcon /> </IconButton>
                     </span>
                 </div>
                 <div className="sticker-content">
-                    <textarea value={this.state.note} onChange={this.noteEntryChanged}></textarea>
+                {this.state.confirmNoteDelete? 
+                    <div >
+                        <Modal
+                            open={this.state.confirmNoteDelete}
+                            onClose={this.handleCloseDialog}
+                        >
+                            <Paper style={{margin:50}}>
+                                <Typography variant="h6" style={{marginLeft:15, marginTop:15}}>
+                                    <b>Alert</b>
+                                </Typography>
+                                <hr />
+                                <div style={{textAlign:"center"}}>
+                                    <Typography variant="subtitle1" style={{marginLeft:15}}>
+                                        Do you want to delete this note?
+                                    </Typography>
+                                </div>
+                                <hr />
+                                <div style={{marginTop:10, textAlign:"center", padding:10}}>
+                                    <Button variant="outlined" color="secondary" style={{marginRight:10}} onClick={this.handleDeleteNote}>
+                                        Yes, DELETE
+                                    </Button>
+                                    
+                                    <Button variant="outlined" color="default" onClick={this.handleCloseDialog}>
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </Paper>
+                        </Modal>
+                    </div>
+                    :
+                    <textarea value={this.state.note} onChange={this.noteEntryChanged}></textarea>                    
+                }
+                    
                 </div>
                 <div className="sticker-footer">
                     {this.state.noteIsSaved!==null&&<span style={{color:this.state.noteIsSaved?"green":this.state.noteIsSaving?"yellow":"red", marginLeft:10}}>

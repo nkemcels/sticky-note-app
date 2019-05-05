@@ -37,10 +37,12 @@ ipcMain.on("save-note", function(event, args){
                     status: "OK",
                     noteId: newNoteId
                 });
+                windows[newNoteId] = {noteWindow: BrowserWindow.fromWebContents(event.sender)};
             }
         });
     }
 });
+
 
 ipcMain.on("initial-data", function(event, args){
     const wind = BrowserWindow.fromWebContents(event.sender);
@@ -53,8 +55,32 @@ ipcMain.on("initial-data", function(event, args){
     }
 });
 
+ipcMain.on("delete-note", function(event, args){
+    const wind = BrowserWindow.fromWebContents(event.sender);
+    if(args.noteId){
+        db.deleteNote(args.noteId, function(err){
+            if(err){
+                //TODO: handle error deleting note
+            }else{
+                wind.close();
+                delete windows[args.noteId];
+            }
+        })
+    }else{
+        wind.close();
+    }
+})
+
 ipcMain.on("create-new-note", function(event){
-    createWindow();
+    const wind = BrowserWindow.fromWebContents(event.sender);
+    let shiftX = 50, shiftY = 50, mx=1, my=1;
+    if(wind.getBounds().x + wind.getBounds().width + shiftX > electron.screen.getPrimaryDisplay().size.width ){
+        mx = -1;
+    }
+    if(wind.getBounds().y + wind.getBounds().height + shiftY > electron.screen.getPrimaryDisplay().size.height){
+        my = 0;
+    }
+    createWindow({ x: wind.getBounds().x + shiftX*mx,  y: wind.getBounds().y + shiftY*my });
 });
 
 function createWindow(params){
@@ -71,29 +97,41 @@ function createWindow(params){
         protocol: "file:",
         slashes: true
     }));
-    window.on("move", function(){
-        let x = window.getBounds().x;
-        let y = window.getBounds().y;
-        let width = window.getBounds().width;
-        let height = window.getBounds().height;
-
-        for (let key in windows){
-            if(windows.hasOwnProperty(key) && windows[key].noteWindow == window){
-                const state = { x, y, width, height };
-                db.saveNoteState(key, state, function(err){
-                    if(err){
-                        //TODO: unable to save state to database
+    function moveResizeListener(){
+        if(!window.hasTimeout){
+            window.hasTimeout = true;
+            setTimeout(function(){
+                let x = window.getBounds().x;
+                let y = window.getBounds().y;
+                let width = window.getBounds().width;
+                let height = window.getBounds().height;
+        
+                for (let key in windows){
+                    if(windows.hasOwnProperty(key) && windows[key].noteWindow == window){
+                        const state = { x, y, width, height };
+                        db.saveNoteState(key, state, function(err){
+                            if(err){
+                                //TODO: unable to save state to database
+                                console.log("err ", err);
+                            }else{
+                                console.log("just saved")
+                            }
+                        })
+                        .setCurrentlyFocusedNote(key, function(err){
+                            if(err){
+                                //TODO: unable to save state to database
+                                console.log(err);
+                            }
+                        });
                     }
-                })
-                .setCurrentlyFocusedNote(key, function(err){
-                    if(err){
-                        //TODO: unable to save state to database
-                        console.log(err);
-                    }
-                });
-            }
+                }
+                window.hasTimeout = false;
+            }, 500);
+            
         }
-    });
+    }
+    window.on("move", moveResizeListener);
+    window.on("resize", moveResizeListener)
     window.on("focus", function(){
         if(!focusedWindowLoaded) return;
         for (let key in windows){
