@@ -1,7 +1,6 @@
 .sticker-header{
     display: flex;
     height: 3em;
-    background-color: #1E88E5;
 }
 .drag-bar{
     -webkit-app-region: drag;
@@ -19,16 +18,16 @@
     width: 70px;
 }
 .sticker-content{
-    display: inline-block;
+    display: flex;
     flex-grow: 1;
-    margin: 5px 0px 0px 10px
+    margin: 5px 0px 0px 5px;
+    padding-right: 5px
 }
 .sticker-content>textarea{
-    width: calc(100% - 10px);
-    height: calc(100% - 10px);
-    background-color: #BBDEFB;
     border: none;
     font-size: 16px;
+    padding: 5px;
+    flex-grow: 1;
 }
 .sticker-content>textarea:focus{
     outline: none
@@ -36,7 +35,6 @@
 .sticker-footer{
     width:100%;
     height: calc( 1em + 3px);
-    background-color: #1E88E5;
     display: -webkit-flex;
     display: flex;
     justify-content: space-between
@@ -50,7 +48,6 @@
     left: 0;
     bottom: 0;
     right:0;
-    background-color: #BBDEFB
 }
 body{
     padding: 0;

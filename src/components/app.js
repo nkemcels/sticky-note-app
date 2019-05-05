@@ -4,7 +4,7 @@ import Button from "@material-ui/core/Button";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/DeleteForever";
 import MoreIcon from "@material-ui/icons/MoreHoriz";
-import MorePopover from "./popover";
+import ThemePopover from "./popover";
 import {ipcRenderer} from "electron";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
@@ -16,6 +16,7 @@ export default class StickyNotes extends Component{
         super();
         this.state = {
             note:"",
+            theme:"theme-1",
             noteId:null,
             noteIsSaving:false,
             noteIsSaved:null,
@@ -53,8 +54,11 @@ export default class StickyNotes extends Component{
         ipcRenderer.send("delete-note", {noteId:this.state.noteId});
     }
 
-    handleExpandMore = ()=>{
-
+    handleChangeTheme = (theme)=>{
+        ipcRenderer.send("change-theme", {noteId:this.state.noteId, theme:theme});
+        this.setState({
+            theme:theme
+        })
     }
 
     handleAddNewNote = ()=>{
@@ -107,24 +111,39 @@ export default class StickyNotes extends Component{
         
     }
 
+    backgroundThemePrimary = (theme)=>{
+        switch(theme){
+            case "theme-1":
+                return "#1E88E5";
+            case "theme-2":
+                return "red";    
+        }
+    }
+
+    backgroundThemeSecondary = (theme)=>{
+        switch(theme){
+            case "theme-1":
+                return "#BBDEFB";
+            case "theme-2":
+                return "green";      
+        }
+    }
+
     render(){
         return(
-            <div className="sticker">
-                <div className="sticker-header">
+            <div className="sticker" style={{backgroundColor:this.backgroundThemePrimary(this.state.theme)}}>
+                <div className="sticker-header" style={{backgroundColor:this.backgroundThemePrimary(this.state.theme)}}>
                     <span>
                         <IconButton onClick={this.handleAddNewNote}> <AddIcon /> </IconButton>
                     </span>
                     <span className="drag-bar"></span>
                     <span>
-                        <MorePopover onClick={this.handleExpandMore} icon={<MoreIcon />}> 
-                            <div className="more-menu-content">
-                                <span style={{backgroundColor:"red"}} />
-                                <span style={{backgroundColor:"green"}} />
-                                <span style={{backgroundColor:"blue"}} />
-                                <span style={{backgroundColor:"orange"}} />
-                                <span style={{backgroundColor:"pink"}} />
-                            </div>
-                        </MorePopover>
+                        <ThemePopover 
+                            icon={<MoreIcon />} 
+                            open={this.state.themeSelected} 
+                            handleChangeTheme={this.handleChangeTheme} 
+                            backgroundThemePrimary={this.backgroundThemePrimary}
+                            backgroundThemeSecondary={this.backgroundThemeSecondary} /> 
                     </span>
                     <span>
                         <IconButton onClick={this.handleConfirmNoteDelete}> <DeleteIcon /> </IconButton>
@@ -161,11 +180,11 @@ export default class StickyNotes extends Component{
                         </Modal>
                     </div>
                     :
-                    <textarea value={this.state.note} onChange={this.noteEntryChanged}></textarea>                    
+                    <textarea value={this.state.note} onChange={this.noteEntryChanged} style={{backgroundColor:this.backgroundThemeSecondary(this.state.theme)}} />                    
                 }
                     
                 </div>
-                <div className="sticker-footer">
+                <div className="sticker-footer"  style={{backgroundColor:this.backgroundThemePrimary(this.state.theme)}}>
                     {this.state.noteIsSaved!==null&&<span style={{color:this.state.noteIsSaved?"green":this.state.noteIsSaving?"yellow":"red", marginLeft:10}}>
                         { 
                             this.state.noteIsSaving? "Saving...":

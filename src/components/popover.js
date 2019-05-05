@@ -3,7 +3,7 @@ import Popover from "@material-ui/core/Popover";
 import IconButton from '@material-ui/core/IconButton';
 
 
-export default class SimplePopover extends React.Component {
+export default class SimpleThemePopover extends React.Component {
   state = {
     anchorEl: null,
   };
@@ -19,6 +19,11 @@ export default class SimplePopover extends React.Component {
       anchorEl: null,
     });
   };
+
+  handleChangeTheme = (theme)=>{
+    this.handleClose();
+    this.props.handleChangeTheme(theme);
+  }
 
   render() {
     const { anchorEl } = this.state;
@@ -48,7 +53,18 @@ export default class SimplePopover extends React.Component {
             horizontal: 'center',
           }}
         >
-          {this.props.children}
+          <div className="more-menu-content">
+              <span style={{backgroundColor:this.props.backgroundThemePrimary("theme-1")}} onClick={()=>this.handleChangeTheme("theme-1")}/>
+              <span style={{backgroundColor:this.props.backgroundThemePrimary("theme-2")}} onClick={()=>this.handleChangeTheme("theme-2")}/>
+              <span style={{backgroundColor:"blue"}} />
+              <span style={{backgroundColor:"orange"}} />
+              <span style={{backgroundColor:"pink"}} />
+              <span style={{backgroundColor:"red"}} />
+              <span style={{backgroundColor:"green"}} />
+              <span style={{backgroundColor:"blue"}} />
+              <span style={{backgroundColor:"green"}} />
+              <span style={{backgroundColor:"blue"}} />
+          </div>
         </Popover>
       </div>
     );
