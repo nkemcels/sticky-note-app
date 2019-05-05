@@ -23,11 +23,11 @@ function createNewNote(note, callback){
     db.serialize(function(){
         const noteId = new Date().getTime();
         const createdDate = getDateTodayStr();
-        db.run("INSERT INTO notes (note, noteId, date_created, date_updated)", [note, noteId, createdDate, createdDate], function(err){
+        db.run("INSERT INTO notes (note, noteId, date_created, date_updated) VALUES(?, ?, ?, ?)", [note, noteId, createdDate, createdDate], function(err){
             if(callback && callback instanceof Function){
                 callback(err, noteId);
             }
-        })
+        });
     });
 }
 
@@ -37,7 +37,7 @@ function loadAllNotes(callback){
             if(callback && callback instanceof Function){
                 callback(err, row);
             }
-        })
+        });
     });
 }
 
@@ -63,7 +63,7 @@ function deleteNote(noteId, callback){
 
 function countNotesAsync(callback){
     db.serialize(function(){
-        db.get("SELECT count(*) FROM notes", [], function(err, row){
+        db.each("SELECT COUNT(*) count FROM notes", function(err, row){
             if(callback && callback instanceof Function){
                 callback(err, row);
             }
@@ -73,7 +73,7 @@ function countNotesAsync(callback){
 
 function initDatabase(callback){
     db.serialize(function(){
-        db.run("CREATE TABLE IF NOT EXISTS notes (date_created VARCHAR, date_updated VARCHAR, note TEXT, noteId INTEGER PRIMARY KEY)", [], function(err){
+        db.run("CREATE TABLE IF NOT EXISTS notes (date_created VARCHAR, date_updated VARCHAR, note TEXT, noteId BIGINT PRIMARY KEY)", [], function(err){
             if(callback && callback instanceof Function){
                 callback(err);
             }

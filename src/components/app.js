@@ -17,7 +17,14 @@ export default class StickyNotes extends Component{
             noteIsSaved:null
         }
 
-        ipcRenderer.on("note-save-response", function(event, args){
+        ipcRenderer.on("initial-data-reply", (event, args)=>{
+            this.setState({
+                note:args.note,
+                noteId:args.noteId
+            })
+        })
+
+        ipcRenderer.on("save-note-reply", (event, args)=>{
             if(args.status == "OK"){
                 this.setState({
                     noteIsSaved:true,
@@ -28,9 +35,13 @@ export default class StickyNotes extends Component{
                 this.setState({
                     noteIsSaved:false,
                     noteIsSaving:false
-                })
+                });
             }
         });
+    }
+
+    componentDidMount(){
+        ipcRenderer.send("initial-data");
     }
 
     handleDeleteNote = ()=>{
@@ -67,11 +78,10 @@ export default class StickyNotes extends Component{
 
         if(!this.timeoutIsSet && this.state.noteId){
             this.timeoutIsSet = true;
-            setInterval(() => {
+            setTimeout(() => {
                 this.saveNote();
-                clearInterval();
                 this.timeoutIsSet = false;
-            }, 2000);
+            }, 500);
         }
     }
 
