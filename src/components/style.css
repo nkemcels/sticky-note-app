@@ -7,18 +7,39 @@
     -webkit-app-region: drag;
     flex-grow: 1;
 }
+.more-menu-content{
+    height: 70px;
+    display: -webkit-flex;
+    display: flex;
+    width:750px;
+}
+.more-menu-content>span{
+    flex-flow: 1;
+    height: 100%;
+    width: 70px;
+}
 .sticker-content{
     display: inline-block;
     flex-grow: 1;
+    margin: 5px 0px 0px 10px
 }
 .sticker-content>textarea{
     width: calc(100% - 10px);
     height: calc(100% - 10px);
     background-color: #BBDEFB;
     border: none;
+    font-size: 16px;
 }
 .sticker-content>textarea:focus{
     outline: none
+}
+.sticker-footer{
+    width:100%;
+    height: calc( 1em + 3px);
+    background-color: #1E88E5;
+    display: -webkit-flex;
+    display: flex;
+    justify-content: space-between
 }
 .sticker{
     position: absolute;
