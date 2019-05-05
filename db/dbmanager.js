@@ -17,6 +17,7 @@ function updateNote(noteId, note, callback){
             }
         });
     });
+    return module.exports;
 }
 
 function createNewNote(note, callback){
@@ -29,6 +30,7 @@ function createNewNote(note, callback){
             }
         });
     });
+    return module.exports;
 }
 
 function loadAllNotes(callback){
@@ -39,6 +41,7 @@ function loadAllNotes(callback){
             }
         });
     });
+    return module.exports;
 }
 
 function loadThisNote(noteId, callback){
@@ -49,6 +52,7 @@ function loadThisNote(noteId, callback){
             }
         })
     });
+    return module.exports;
 }
 
 function deleteNote(noteId, callback){
@@ -59,16 +63,18 @@ function deleteNote(noteId, callback){
             }
         })
     });
+    return module.exports;
 }
 
 function countNotesAsync(callback){
     db.serialize(function(){
-        db.each("SELECT COUNT(*) count FROM notes", function(err, row){
+        db.get("SELECT COUNT(*) count FROM notes", function(err, row){
             if(callback && callback instanceof Function){
                 callback(err, row);
             }
         })
     });
+    return module.exports;
 }
 
 function initDatabase(callback){
@@ -77,10 +83,62 @@ function initDatabase(callback){
             if(callback && callback instanceof Function){
                 callback(err);
             }
-        });
-    })
+        })
+        .run("CREATE TABLE IF NOT EXISTS noteStates (noteId BIGINT PRIMARY KEY, x INT, y INT, width INT, height INT, colorTheme VARCHAR)")
+        .run("CREATE TABLE IF NOT EXISTS focusedNote (id INT PRIMARY KEY, noteId BIGINT)")
+        .run("CREATE TABLE IF NOT EXISTS noteColorThemes ( BIGINT PRIMARY KEY, colorTheme VARCHAR)");
+    });
+    return module.exports;
 }
 
+function saveNoteState(noteId, state, callback){
+    db.serialize(function(){
+        if(!state) return;
+        db.run("INSERT OR REPLACE INTO noteStates (noteId, x, y, width, height) VALUES (?, ?, ?, ?, ?)", 
+            [noteId, state.x, state.y, state.width, state.height], 
+            function(err){
+                if(callback && callback instanceof Function){
+                    callback(err);
+                }
+            }
+        );
+    });
+    return module.exports;
+}
+
+function setCurrentlyFocusedNote(noteId, callback){
+    db.serialize(function(){
+        db.run("INSERT OR REPLACE INTO focusedNote (id, noteId) VALUES(?, ?)", [1, noteId], function(err){
+            if(callback && callback instanceof Function){
+                callback(err);
+            }
+        });
+    });
+    return module.exports;
+}
+
+function getCurrentlyFocusedNote(callback){
+    db.serialize(function(){
+        db.get("SELECT noteId FROM focusedNote", function(err, row){
+            if(callback && callback instanceof Function){
+                callback(err, row);
+            }
+        });
+    });
+    return module.exports;
+}
+
+
+function loadNoteState(noteId, callback){
+    db.serialize(function(){
+        db.get("SELECT * FROM noteStates WHERE noteId=?", [noteId], function(err, row){
+            if(callback && callback instanceof Function){
+                callback(err, row);
+            }
+        })
+    });
+    return module.exports;
+}
 
 module.exports = {
     initDatabase,
@@ -89,5 +147,9 @@ module.exports = {
     loadAllNotes,
     loadThisNote,
     deleteNote,
+    saveNoteState,
+    loadNoteState,
+    setCurrentlyFocusedNote,
+    getCurrentlyFocusedNote,
     countNotesAsync
 }

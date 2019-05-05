@@ -53,7 +53,7 @@ export default class StickyNotes extends Component{
     }
 
     handleAddNewNote = ()=>{
-
+        ipcRenderer.send("create-new-note");
     }
 
     saveNote = ()=>{
