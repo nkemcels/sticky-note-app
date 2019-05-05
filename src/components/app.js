@@ -26,7 +26,8 @@ export default class StickyNotes extends Component{
         ipcRenderer.on("initial-data-reply", (event, args)=>{
             this.setState({
                 note:args.note,
-                noteId:args.noteId
+                noteId:args.noteId,
+                theme:args.colorTheme?args.colorTheme:"theme-1"
             })
         })
 

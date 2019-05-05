@@ -83,6 +83,18 @@ ipcMain.on("create-new-note", function(event){
     createWindow({ x: wind.getBounds().x + shiftX*mx,  y: wind.getBounds().y + shiftY*my });
 });
 
+ipcMain.on("change-theme", function(event, args){
+    if(args.noteId){
+        db.saveNoteColorTheme(args.noteId, args.theme, function(err){
+            if(err){
+                //TODO: handle did not save note theme sucessfully
+            }else{
+                //TODO: handle theme saved successfully
+            }
+        });
+    }
+});
+
 function createWindow(params){
     params = params?params:{};
     let window = new BrowserWindow({

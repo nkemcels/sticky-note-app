@@ -79,16 +79,25 @@ function countNotesAsync(callback){
 
 function initDatabase(callback){
     db.serialize(function(){
-        db.run("CREATE TABLE IF NOT EXISTS notes (date_created VARCHAR, date_updated VARCHAR, note TEXT, noteId BIGINT PRIMARY KEY)", [], function(err){
+        db.run("CREATE TABLE IF NOT EXISTS notes (date_created VARCHAR, date_updated VARCHAR, note TEXT, noteId BIGINT PRIMARY KEY, colorTheme VARCHAR)", [], function(err){
             if(callback && callback instanceof Function){
                 callback(err);
             }
         })
-        .run("CREATE TABLE IF NOT EXISTS noteStates (noteId BIGINT PRIMARY KEY, x INT, y INT, width INT, height INT, colorTheme VARCHAR)")
+        .run("CREATE TABLE IF NOT EXISTS noteStates (noteId BIGINT PRIMARY KEY, x INT, y INT, width INT, height INT)")
         .run("CREATE TABLE IF NOT EXISTS focusedNote (id INT PRIMARY KEY, noteId BIGINT)")
-        .run("CREATE TABLE IF NOT EXISTS noteColorThemes ( BIGINT PRIMARY KEY, colorTheme VARCHAR)");
     });
     return module.exports;
+}
+
+function saveNoteColorTheme(noteId, colorTheme, callback){
+    db.serialize(function(){
+        db.run("UPDATE notes SET colorTheme=? WHERE noteId=?", [colorTheme, noteId], function(err){
+            if(callback && callback instanceof Function){
+                callback(err);
+            }
+        });
+    });
 }
 
 function saveNoteState(noteId, state, callback){
@@ -151,5 +160,6 @@ module.exports = {
     loadNoteState,
     setCurrentlyFocusedNote,
     getCurrentlyFocusedNote,
+    saveNoteColorTheme,
     countNotesAsync
 }
