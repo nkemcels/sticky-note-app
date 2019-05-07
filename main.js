@@ -51,9 +51,30 @@ ipcMain.on("initial-data", function(event, args){
             event.sender.send("initial-data-reply", {
                 ...windows[key].noteData
             });
+            if(windows[key].noteData.alwaysOnTop==1) wind.setAlwaysOnTop(true, "modal-panel");
+            else wind.setAlwaysOnTop(false, "normal");
+            return;
         }
     }
+
+    event.sender.send("initial-data-reply", {
+        colorTheme: currentTheme
+    });
 });
+
+ipcMain.on("set-ontop", function(event, args){
+    const wind = BrowserWindow.fromWebContents(event.sender);
+    if(args.state) wind.setAlwaysOnTop(true, "modal-panel");
+    else wind.setAlwaysOnTop(false, "normal");
+
+    if(args.noteId){
+        db.saveNoteAlwaysOnTop(args.noteId, args.state,function(err){
+            if(err){
+                //TODO: could not switch always ontop state
+            }
+        })
+    }
+})
 
 ipcMain.on("delete-note", function(event, args){
     const wind = BrowserWindow.fromWebContents(event.sender);
@@ -71,16 +92,24 @@ ipcMain.on("delete-note", function(event, args){
     }
 })
 
-ipcMain.on("create-new-note", function(event){
+ipcMain.on("create-new-note", function(event, args){
     const wind = BrowserWindow.fromWebContents(event.sender);
-    let shiftX = 50, shiftY = 50, mx=1, my=1;
-    if(wind.getBounds().x + wind.getBounds().width + shiftX > electron.screen.getPrimaryDisplay().size.width ){
-        mx = -1;
+    let shiftX = 20, shiftY = 20, mx=1, my=1, x=null, y=null;
+    if(wind.getBounds().y + wind.getBounds().height + shiftY <= electron.screen.getPrimaryDisplay().size.height ){
+        x = wind.getBounds().x;
+        y = wind.getBounds().y + wind.getBounds().height + shiftY;
     }
-    if(wind.getBounds().y + wind.getBounds().height + shiftY > electron.screen.getPrimaryDisplay().size.height){
-        my = 0;
+    else{
+        if(wind.getBounds().x + wind.getBounds().width + shiftX > electron.screen.getPrimaryDisplay().size.width ){
+            mx = -1;
+        }
+        if(wind.getBounds().y + wind.getBounds().height + shiftY > electron.screen.getPrimaryDisplay().size.height){
+            my = 0;
+        }
     }
-    createWindow({ x: wind.getBounds().x + shiftX*mx,  y: wind.getBounds().y + shiftY*my });
+    
+    createWindow({ x: x?x:wind.getBounds().x + shiftX*mx,  y: y?y:wind.getBounds().y + shiftY*my, width:wind.getBounds().width, height:wind.getBounds().height });
+    currentTheme = args.theme;
 });
 
 ipcMain.on("change-theme", function(event, args){
@@ -143,7 +172,7 @@ function createWindow(params){
         }
     }
     window.on("move", moveResizeListener);
-    window.on("resize", moveResizeListener)
+    window.on("resize", moveResizeListener);
     window.on("focus", function(){
         if(!focusedWindowLoaded) return;
         for (let key in windows){
@@ -156,7 +185,7 @@ function createWindow(params){
                 });
             }
         }
-    })
+    });
     window.on("close", function(){
         window = null;
     });
@@ -166,6 +195,7 @@ function createWindow(params){
 
 let windows={}
 let focusedWindowLoaded = false;
+let currentTheme;
 function initMainProcess(){
     db.initDatabase(function(err){
         if(err){

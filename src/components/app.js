@@ -20,14 +20,16 @@ export default class StickyNotes extends Component{
             noteId:null,
             noteIsSaving:false,
             noteIsSaved:null,
-            confirmNoteDelete:false
+            confirmNoteDelete:false,
+            alwaysOnTop:false
         }
 
         ipcRenderer.on("initial-data-reply", (event, args)=>{
             this.setState({
                 note:args.note,
                 noteId:args.noteId,
-                theme:args.colorTheme?args.colorTheme:"theme-1"
+                theme:args.colorTheme?args.colorTheme:"theme-1",
+                alwaysOnTop: args.alwaysOnTop === 1
             })
         })
 
@@ -63,7 +65,7 @@ export default class StickyNotes extends Component{
     }
 
     handleAddNewNote = ()=>{
-        ipcRenderer.send("create-new-note");
+        ipcRenderer.send("create-new-note", {theme:this.state.theme});
     }
 
     saveNote = ()=>{
@@ -80,13 +82,9 @@ export default class StickyNotes extends Component{
     noteEntryChanged = (evt)=>{
         this.setState({
             note: evt.target.value
-        }, ()=>{
-            if(!this.state.noteId){
-                this.saveNote();
-            }
         });
 
-        if(!this.timeoutIsSet && this.state.noteId){
+        if(!this.timeoutIsSet){
             this.timeoutIsSet = true;
             setTimeout(() => {
                 this.saveNote();
@@ -112,21 +110,69 @@ export default class StickyNotes extends Component{
         
     }
 
+    handleToggleAlwaysOnTop = ()=>{
+        this.setState({
+            alwaysOnTop:!this.state.alwaysOnTop
+        }, ()=>{
+            ipcRenderer.send("set-ontop", {state:this.state.alwaysOnTop, noteId:this.state.noteId});
+        });
+    }
+
     backgroundThemePrimary = (theme)=>{
         switch(theme){
-            case "theme-1":
-                return "#1E88E5";
             case "theme-2":
-                return "red";    
+                return "#C2185B";    
+            case "theme-3":
+                return "#3949AB";
+            case "theme-4":
+                return "#00838F";
+            case "theme-5":
+                return "#F57F17";    
+            case "theme-6":
+                return "#5D4037";
+            case "theme-7":
+                return "#37474F";
+            case "theme-8":
+                return "#2E7D32";    
+            case "theme-9":
+                return "#BF360C";
+            case "theme-10":
+                return "#6A1B9A";
+            case "theme-11":
+                return "#00B8D4";    
+            case "theme-12":
+                return "#AA00FF";  
+            default: case "theme-1":
+                return "#1E88E5";                  
         }
     }
 
     backgroundThemeSecondary = (theme)=>{
         switch(theme){
-            case "theme-1":
-                return "#BBDEFB";
             case "theme-2":
-                return "green";      
+                return "#FCE4EC";    
+            case "theme-3":
+                return "#C5CAE9";
+            case "theme-4":
+                return "#E0F7FA";
+            case "theme-5":
+                return "#FFFDE7";    
+            case "theme-6":
+                return "#EFEBE9";
+            case "theme-7":
+                return "#ECEFF1";
+            case "theme-8":
+                return "#E8F5E9";    
+            case "theme-9":
+                return "#FBE9E7";
+            case "theme-10":
+                return "#F3E5F5";
+            case "theme-11":
+                return "#E0F7FA";    
+            case "theme-12":
+                return "#F3E5F5"; 
+            default: case "theme-1":
+                return "#E3F2FD";                                
         }
     }
 
@@ -144,7 +190,10 @@ export default class StickyNotes extends Component{
                             open={this.state.themeSelected} 
                             handleChangeTheme={this.handleChangeTheme} 
                             backgroundThemePrimary={this.backgroundThemePrimary}
-                            backgroundThemeSecondary={this.backgroundThemeSecondary} /> 
+                            backgroundThemeSecondary={this.backgroundThemeSecondary}
+                            alwaysOnTop={this.state.alwaysOnTop}
+                            toggleAlwaysOnTop = {this.handleToggleAlwaysOnTop}
+                             /> 
                     </span>
                     <span>
                         <IconButton onClick={this.handleConfirmNoteDelete}> <DeleteIcon /> </IconButton>
@@ -192,11 +241,6 @@ export default class StickyNotes extends Component{
                             this.state.noteIsSaved?  "Saved": "Failed to Save"  
                         }
                     </span>}
-                    <span style={{fontSize:12, marginTop:2}}>
-                        <a href="#">
-                            <b style={{color:"green"}}>CELS</b> <b style={{color:"blue"}}>BITS</b> @2019
-                        </a>    
-                    </span>
                 </div>
             </div>
         )

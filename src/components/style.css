@@ -15,7 +15,7 @@
 .more-menu-content>span{
     flex-flow: 1;
     height: 100%;
-    width: 70px;
+    width: 60px;
 }
 .sticker-content{
     display: flex;
@@ -37,7 +37,7 @@
     height: calc( 1em + 3px);
     display: -webkit-flex;
     display: flex;
-    justify-content: space-between
+    justify-content: space-between;
 }
 .sticker{
     position: absolute;

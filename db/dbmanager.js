@@ -79,7 +79,7 @@ function countNotesAsync(callback){
 
 function initDatabase(callback){
     db.serialize(function(){
-        db.run("CREATE TABLE IF NOT EXISTS notes (date_created VARCHAR, date_updated VARCHAR, note TEXT, noteId BIGINT PRIMARY KEY, colorTheme VARCHAR)", [], function(err){
+        db.run("CREATE TABLE IF NOT EXISTS notes (date_created VARCHAR, date_updated VARCHAR, note TEXT, noteId BIGINT PRIMARY KEY, colorTheme VARCHAR, alwaysOnTop SMALLINT(1))", [], function(err){
             if(callback && callback instanceof Function){
                 callback(err);
             }
@@ -98,6 +98,16 @@ function saveNoteColorTheme(noteId, colorTheme, callback){
             }
         });
     });
+}
+
+function saveNoteAlwaysOnTop(noteId, alwaysOnTop, callback){
+    db.serialize(function(){
+        db.run("UPDATE notes SET alwaysOnTop=? WHERE noteId=?", [alwaysOnTop?1:0, noteId], function(err){
+            if(callback && callback instanceof Function){
+                callback(err);
+            }
+        });
+    });    
 }
 
 function saveNoteState(noteId, state, callback){
@@ -161,5 +171,6 @@ module.exports = {
     setCurrentlyFocusedNote,
     getCurrentlyFocusedNote,
     saveNoteColorTheme,
+    saveNoteAlwaysOnTop,
     countNotesAsync
 }
