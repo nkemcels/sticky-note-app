@@ -13,6 +13,7 @@ const ipcMain = electron.ipcMain;
 ipcMain.on("save-note", function(event, args){
     const noteId = args.noteId;
     const noteValue = args.noteValue;
+    const wind = BrowserWindow.fromWebContents(event.sender);
     if(noteId){
         db.updateNote(noteId, noteValue, function(err){
             if(err){
@@ -38,8 +39,26 @@ ipcMain.on("save-note", function(event, args){
                     noteId: newNoteId
                 });
                 windows[newNoteId] = {noteWindow: BrowserWindow.fromWebContents(event.sender)};
+                let x = wind.getBounds().x, y = wind.getBounds().y, width = wind.getBounds().width, height = wind.getBounds().height;
+                const state = { x, y, width, height };
+                db.saveNoteState(newNoteId, state, function(err){
+                    if(err){
+                        //TODO: unable to save state to database
+                    }
+                })
+                .setCurrentlyFocusedNote(newNoteId, function(err){
+                    if(err){
+                        //TODO: unable to save state to database
+                    }
+                });
+                db.saveNoteAlwaysOnTop(newNoteId, args.alwaysOnTop,function(err){
+                    if(err){ 
+                        //TODO: could not switch always ontop state
+                    }
+                });
             }
         });
+        
     }
 });
 

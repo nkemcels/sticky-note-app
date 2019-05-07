@@ -71,7 +71,8 @@ export default class StickyNotes extends Component{
     saveNote = ()=>{
         ipcRenderer.send("save-note", {
             noteId: this.state.noteId,
-            noteValue: this.state.note
+            noteValue: this.state.note,
+            alwaysOnTop: this.state.alwaysOnTop
         });
         this.setState({
             noteIsSaving:true,
