@@ -7,7 +7,7 @@
     flex-grow: 1;
 }
 .more-menu-content{
-    height: 70px;
+    height: 50px;
     display: -webkit-flex;
     display: flex;
     width:750px;
@@ -15,7 +15,7 @@
 .more-menu-content>span{
     flex-flow: 1;
     height: 100%;
-    width: 60px;
+    width: 50px;
 }
 .sticker-content{
     display: flex;

@@ -127,8 +127,8 @@ ipcMain.on("change-theme", function(event, args){
 function createWindow(params){
     params = params?params:{};
     let window = new BrowserWindow({
-        width:760,
-        height:460,
+        width:680,
+        height:420,
         webPreferences:{nodeIntegration:true},
         frame:false,
         ...params
@@ -155,7 +155,7 @@ function createWindow(params){
                                 //TODO: unable to save state to database
                                 console.log("err ", err);
                             }else{
-                                console.log("just saved")
+
                             }
                         })
                         .setCurrentlyFocusedNote(key, function(err){
